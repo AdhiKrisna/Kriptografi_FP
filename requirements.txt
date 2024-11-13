@@ -1,5 +1,5 @@
 streamlit==1.30.0
-mysqlclient==2.0.3
+# mysqlclient==2.0.3
 mysql-connector-python==8.0.33
 sqlalchemy==1.4.20
 cryptography==3.4.7
