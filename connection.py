@@ -10,7 +10,8 @@ def create_connection():
             host=st.secrets["host"],
             user=st.secrets["username"],
             password=st.secrets["password"],
-            database=st.secrets["database"]
+            database=st.secrets["database"],
+            port=st.secrets.get("port", 3306)
         )
         return connection
     except Error as e:
