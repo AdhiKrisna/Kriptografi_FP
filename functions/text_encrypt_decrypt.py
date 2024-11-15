@@ -104,7 +104,7 @@ def ecc_encrypt(message, public_key, private_key):
     return encrypted_message, iv, encryptor.tag, salt
 
 # Function to decrypt with ECC private key
-def ecc_decrypt(encrypted_message, iv, tag, salt, public_key, private_key): 
+def ecc_decrypt(encrypted_message, public_key, private_key, iv, tag, salt):
     # Derive the shared key from the private key and the sender's public key
     shared_key = private_key.exchange(ec.ECDH(), public_key, private_key) 
     kdf = PBKDF2HMAC(
@@ -133,17 +133,17 @@ def super_encrypt(message, rail_key, ecc_public_key, ecc_private_key):
     # Step 2: Encrypt with ECC (Elliptic Curve Cryptography)
     private_key_content = extract_key_content(ecc_private_key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()))
     ecc_encrypted, iv, tag, salt = ecc_encrypt(rail_encrypted, ecc_public_key, ecc_private_key)
-    query = "INSERT INTO messages (encrypted_text, private_key, space_position, rail_fence_key) VALUES (%s, %s, %s, %s);"
-    cn.run_query(query, (ecc_encrypted, private_key_content, str(space_positions), rail_key), fetch=False)
-    return ecc_encrypted, space_positions, iv, tag, salt
+    query = "INSERT INTO messages (encrypted_text, private_key, space_position, rail_fence_key, iv, tag, salt) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+    cn.run_query(query, (ecc_encrypted, private_key_content, str(space_positions), rail_key, iv, tag, salt), fetch=False)
+    return ecc_encrypted, space_positions
 
 # Super Decryption Function
-def super_decrypt(encrypted_message, rail_key, space_positions, private_key_content):
+def super_decrypt(encrypted_message, rail_key, space_positions, private_key_content, iv, tag, salt):
     # Step 1: Decrypt with ECC (Elliptic Curve Cryptography)
     # private_key_content = extract_key_content(ecc_private_key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()))
     print("\nPrivate Key Content:", private_key_content)
     ecc_private_key = add_key_markers(private_key_content, "PRIVATE")
-    ecc_decrypted = ecc_decrypt(encrypted_message, ecc_private_key)
+    ecc_decrypted = ecc_decrypt(encrypted_message, ecc_private_key, iv, tag, salt)
     print(f"ECC Decrypted: {ecc_decrypted}")
 
     # Step 2: Decrypt with Rail Fence Cipher

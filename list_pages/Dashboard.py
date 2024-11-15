@@ -21,14 +21,11 @@ def dashboard(page):
                     st.stop()
                 with st.expander(":green[See Result]"):
                     private_key, public_key = generate_ecc_keys()
-                    super_encrypted, space_positions, iv, tag, salt = super_encrypt(message, railKey, public_key, private_key)
+                    super_encrypted, space_positions = super_encrypt(message, railKey, public_key, private_key)
                     st.subheader(f"Encrypted Message: ")
                     st.write(f":green[{super_encrypted}]")
                     st.subheader(f"Space Positions:")
                     st.write(f":green[{space_positions}]")
-                    st.subheader(f"iv: {iv.decode()}")
-                    st.subheader(f"tag: {tag.decode()}")
-                    st.subheader(f"salt: {salt.decode()}")
                     st.subheader(f"Please save the encrypted message and space positions for decryption.")
         with tab2:
             st.header("Text Decrypt")
@@ -41,7 +38,7 @@ def dashboard(page):
                     if query is not None and not query.empty:
                         private_key = query.private_key[0]
                         ecc_private_key = add_key_markers(private_key, "PRIVATE")
-                        decrypted_message = super_decrypt(encryptedText, railKey, spacePosition, ecc_private_key)
+                        decrypted_message = super_decrypt(encryptedText, railKey, spacePosition, ecc_private_key, query.iv[0], query.tag[0], query.salt[0])
                         st.subheader(f"Decrypted Message: ")
                         st.write(f":green[{decrypted_message}]")
                     else:
