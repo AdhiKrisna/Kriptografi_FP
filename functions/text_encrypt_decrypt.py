@@ -1,5 +1,9 @@
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+import os
 import base64
 import connection as cn
 
@@ -76,12 +80,43 @@ def generate_ecc_keys():
     return private_key, public_key
 
 def ecc_encrypt(message, public_key):
-    encoded_message = message.encode()
-    encrypted = public_key.encrypt(encoded_message, ec.ECIES())
-    return base64.b64encode(encrypted).decode()
+    shared_key = public_key.exchange(ec.ECDH(), ec.generate_private_key(ec.SECP256R1()))
+    derived_key = HKDF(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=None,
+        info=b'handshake data'
+    ).derive(shared_key)
+    
+    iv = os.urandom(12)
+    encryptor = Cipher(
+        algorithms.AES(derived_key),
+        modes.GCM(iv)
+    ).encryptor()
+    
+    encrypted_message = encryptor.update(message.encode()) + encryptor.finalize()
+    return base64.b64encode(iv + encryptor.tag + encrypted_message).decode()
 
 def ecc_decrypt(encrypted_message, private_key):
-    decoded_message = base64.b64decode(encrypted_message.encode())
+    encrypted_message_bytes = base64.b64decode(encrypted_message.encode())
+    iv = encrypted_message_bytes[:12]
+    tag = encrypted_message_bytes[12:28]
+    ciphertext = encrypted_message_bytes[28:]
+    
+    shared_key = private_key.exchange(ec.ECDH(), ec.generate_private_key(ec.SECP256R1().public_key()))
+    derived_key = HKDF(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=None,
+        info=b'handshake data'
+    ).derive(shared_key)
+    
+    decryptor = Cipher(
+        algorithms.AES(derived_key),
+        modes.GCM(iv, tag)
+    ).decryptor()
+    
+    decoded_message = decryptor.update(ciphertext) + decryptor.finalize()
     return decoded_message.decode()
 
 # Super Encryption Function
