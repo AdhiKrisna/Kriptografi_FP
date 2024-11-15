@@ -28,7 +28,7 @@ def login():
                     st.error(f"Decryption error: {e}")
                     return
                 
-                if username == row['username'] and password == decPass:
+                if username == row[0] and password == decPass:
                     st.success("Login successful!")
                     st.session_state["is_logged_in"] = True
                     st.session_state["username"] = username
@@ -44,5 +44,5 @@ if __name__ == "__main__":
     login()
     # Check login status and redirect to Dashboard if logged in
     if st.session_state["is_logged_in"]:
-        st.write(f"Welcome, {st.session_state['username']}!")
+        st.write(f"Welcome, {st.session_state[0]}!")
         st.write("Redirecting to Dashboard...")
