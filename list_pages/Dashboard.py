@@ -21,11 +21,14 @@ def dashboard(page):
                     st.stop()
                 with st.expander(":green[See Result]"):
                     private_key, public_key = generate_ecc_keys()
-                    super_encrypted, space_positions = super_encrypt(message, railKey, public_key, private_key)
+                    super_encrypted, space_positions, iv, tag, salt = super_encrypt(message, railKey, public_key, private_key)
                     st.subheader(f"Encrypted Message: ")
                     st.write(f":green[{super_encrypted}]")
                     st.subheader(f"Space Positions:")
                     st.write(f":green[{space_positions}]")
+                    st.subheader(f"iv: {iv}")
+                    st.subheader(f"tag: {tag}")
+                    st.subheader(f"salt: {salt}")
                     st.subheader(f"Please save the encrypted message and space positions for decryption.")
         with tab2:
             st.header("Text Decrypt")

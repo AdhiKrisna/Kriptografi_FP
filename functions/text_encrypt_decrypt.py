@@ -132,10 +132,10 @@ def super_encrypt(message, rail_key, ecc_public_key, ecc_private_key):
     
     # Step 2: Encrypt with ECC (Elliptic Curve Cryptography)
     private_key_content = extract_key_content(ecc_private_key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()))
-    ecc_encrypted = ecc_encrypt(rail_encrypted, ecc_public_key, ecc_private_key)
+    ecc_encrypted, iv, tag, salt = ecc_encrypt(rail_encrypted, ecc_public_key, ecc_private_key)
     query = "INSERT INTO messages (encrypted_text, private_key, space_position, rail_fence_key) VALUES (%s, %s, %s, %s);"
     cn.run_query(query, (ecc_encrypted, private_key_content, str(space_positions), rail_key), fetch=False)
-    return ecc_encrypted, space_positions
+    return ecc_encrypted, space_positions, iv, tag, salt
 
 # Super Decryption Function
 def super_decrypt(encrypted_message, rail_key, space_positions, private_key_content):
