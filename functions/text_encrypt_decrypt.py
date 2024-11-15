@@ -157,6 +157,9 @@ def super_decrypt(encrypted_message, rail_key, space_positions):
     # Step 1: Decrypt with ECC (Elliptic Curve Cryptography)
     query = "SELECT private_key_content, public_key_content FROM messages WHERE encrypted_text = %s"
     result = cn.run_query(query, (encrypted_message,), True)
+    if result is None or len(result) == 0:
+        print("No data found.")
+        return None
     private_key_content, public_key_content = result[0], result[1]
     ecc_private_key = load_key_from_base64(private_key_content, is_private=True)    
     ecc_public_key = load_key_from_base64(public_key_content, is_private=False)
