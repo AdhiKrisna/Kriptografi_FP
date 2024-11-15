@@ -6,7 +6,8 @@ if 'is_logged_in' not in st.session_state:
 
 if st.session_state['is_logged_in']:
     st.sidebar.title("Navigation")
-    st.sidebar.success("Logged in")
+    username = st.session_state['username']
+    st.sidebar.success(f"Logged in as {username}")
     page = st.sidebar.selectbox("Go to", ["Message Cryptography", "Image Encrypt Stegano", "File Encrypt"])
     Dashboard.dashboard(page)
    
