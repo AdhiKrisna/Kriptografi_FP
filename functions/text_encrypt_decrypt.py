@@ -3,6 +3,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
 import os
 import connection as cn
 
@@ -78,17 +79,24 @@ def generate_ecc_keys():
     return private_key, public_key
 
 # Function to encrypt a message with ECC public key
-def ecc_encrypt(message, public_key, private_key):
-    # Encrypting with ECC requires creating a shared secret, so ECC alone does not directly encrypt data
-    # One way is to derive a symmetric key from the public key and use it for encryption
-    shared_key = public_key.exchange(ec.ECDH(), private_key)
-    salt = os.urandom(16)  # Generate a random salt
-    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000)
+def ecc_encrypt(message, public_key, private_key):  
+    # Derive a shared key using ECDH
+    shared_key = private_key.exchange(ec.ECDH(), public_key)
+    
+    # Use a salt for KDF
+    salt = os.urandom(16)
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
     aes_key = kdf.derive(shared_key)
 
     # Encrypt the message with AES-GCM
     iv = os.urandom(12)
-    cipher = Cipher(algorithms.AES(aes_key), modes.GCM(iv))
+    cipher = Cipher(algorithms.AES(aes_key), modes.GCM(iv), backend=default_backend())
     encryptor = cipher.encryptor()
     encrypted_message = encryptor.update(message.encode()) + encryptor.finalize()
 
@@ -96,14 +104,20 @@ def ecc_encrypt(message, public_key, private_key):
     return encrypted_message, iv, encryptor.tag, salt
 
 # Function to decrypt with ECC private key
-def ecc_decrypt(encrypted_message, iv, tag, salt, private_key):
-    # Derive the shared key from the private key and the original public key
-    shared_key = private_key.exchange(ec.ECDH(), private_key)
-    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000)
+def ecc_decrypt(encrypted_message, iv, tag, salt, public_key, private_key): 
+    # Derive the shared key from the private key and the sender's public key
+    shared_key = private_key.exchange(ec.ECDH(), public_key, private_key) 
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100000,
+        backend=default_backend()
+    )
     aes_key = kdf.derive(shared_key)
 
     # Decrypt the message with AES-GCM
-    cipher = Cipher(algorithms.AES(aes_key), modes.GCM(iv, tag))
+    cipher = Cipher(algorithms.AES(aes_key), modes.GCM(iv, tag), backend=default_backend())
     decryptor = cipher.decryptor()
     decrypted_message = decryptor.update(encrypted_message) + decryptor.finalize()
     
