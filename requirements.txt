@@ -7,11 +7,11 @@
 # numpy==1.21.0
 # pycryptodome==3.10.1
 
-streamlit==1.30.0
-mysql-connector-python==8.0.33
-sqlalchemy==2.0.21
-cryptography==41.0.3
-pandas==2.1.0
-numpy==1.23.0
-pycryptodome==3.18.0
-setuptools==68.0.0
+streamlit
+mysql-connector-python 
+sqlalchemy
+cryptography
+pandas 
+numpy>=1.25.0
+pycryptodome 
+setuptools
