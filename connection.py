@@ -91,20 +91,26 @@ def run_query(query, params=None, fetch=True):
     conn = create_connection()
     if conn:
         cursor = conn.cursor(cursor_factory=DictCursor)  # Gunakan DictCursor di sini
-        if params:
-            cursor.execute(query, params)
-        else:
-            cursor.execute(query)
-        
-        # For SELECT queries, fetch results
-        if fetch:
-            result = cursor.fetchall()
-            return pd.DataFrame(result, columns=[desc[0] for desc in cursor.description]) if result else pd.DataFrame()
-        
-        # For INSERT, UPDATE, DELETE queries
-        else:
-            conn.commit()
+        try:
+            if params:
+                cursor.execute(query, params)
+            else:
+                cursor.execute(query)
+            
+            # For SELECT queries, fetch results
+            if fetch:
+                result = cursor.fetchall()
+                return pd.DataFrame(result, columns=[desc[0] for desc in cursor.description]) if result else pd.DataFrame()
+            
+            # For INSERT, UPDATE, DELETE queries
+            else:
+                conn.commit()
+                return None
+        except Exception as e:
             return None
+        finally:
+            cursor.close()
+            conn.close()
     else:
         st.error("Failed to connect to the database.")
         return None
