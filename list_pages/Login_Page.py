@@ -23,7 +23,7 @@ def login():
                 
                 # Mendekripsi password
                 try:
-                    decPass = fernet.decrypt(row['password'].encode()).decode()
+                    decPass = fernet.decrypt(row[1].encode()).decode()
                 except Exception as e:
                     st.error(f"Decryption error: {e}")
                     return
