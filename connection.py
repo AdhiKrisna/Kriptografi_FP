@@ -71,7 +71,8 @@ def create_connection():
             user=st.secrets["username"],
             password=st.secrets["password"],
             database=st.secrets["database"],
-            port=st.secrets.get("port", 5432)
+            port=st.secrets.get("port", 5432),
+            cursor_factory=psycopg2.extras.DictCursor  # Tambahkan ini
         )
         return connection
     except Error as e:
