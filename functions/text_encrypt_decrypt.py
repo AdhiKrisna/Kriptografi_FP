@@ -6,7 +6,6 @@ from cryptography.hazmat.backends import default_backend
 import base64
 import os
 import connection as cn
-import streamlit as st
 
 
 # Algoritma Rail Fence Cipher dengan penanganan spasi
@@ -158,11 +157,10 @@ def super_decrypt(encrypted_message, rail_key, space_positions):
     # Step 1: Decrypt with ECC (Elliptic Curve Cryptography)
     query = "SELECT private_key_content, public_key_content FROM messages WHERE encrypted_text = %s"
     result = cn.run_query(query, (encrypted_message,), True)
-    st.write("Query Result:", result)
     if result is None or len(result) == 0:
         print("No data found.")
         return None
-    private_key_content, public_key_content = result[0], result[1]
+    private_key_content, public_key_content = result['private_key_content'][0], result['public_key_content'][0]
     ecc_private_key = load_key_from_base64(private_key_content, is_private=True)    
     ecc_public_key = load_key_from_base64(public_key_content, is_private=False)
     ecc_decrypted = ecc_decrypt(encrypted_message, ecc_private_key, ecc_public_key)
