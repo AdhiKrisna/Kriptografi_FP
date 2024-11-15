@@ -100,7 +100,7 @@ def run_query(query, params=None, fetch=True):
             # For SELECT queries, fetch results
             if fetch:
                 result = cursor.fetchall()
-                return pd.DataFrame(result) if result else pd.DataFrame()
+                return pd.DataFrame(result, columns=[desc[0] for desc in cursor.description]) if result else pd.DataFrame()
             
             # For INSERT, UPDATE, DELETE queries
             else:

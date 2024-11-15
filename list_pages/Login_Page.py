@@ -18,17 +18,17 @@ def login():
         # Pastikan hasil query tidak kosong
         if query is not None and not query.empty:
             for _, row in query.iterrows():
-                key = row[2]
+                key = row['fernetkey']
                 fernet = Fernet(key.encode())
                 
                 # Mendekripsi password
                 try:
-                    decPass = fernet.decrypt(row[1].encode()).decode()
+                    decPass = fernet.decrypt(row['password'].encode()).decode()
                 except Exception as e:
                     st.error(f"Decryption error: {e}")
                     return
                 
-                if username == row[0] and password == decPass:
+                if username == row['username'] and password == decPass:
                     st.success("Login successful!")
                     st.session_state["is_logged_in"] = True
                     st.session_state["username"] = username
@@ -44,5 +44,5 @@ if __name__ == "__main__":
     login()
     # Check login status and redirect to Dashboard if logged in
     if st.session_state["is_logged_in"]:
-        st.write(f"Welcome, {st.session_state[0]}!")
+        st.write(f"Welcome, {st.session_state['username']}!")
         st.write("Redirecting to Dashboard...")
