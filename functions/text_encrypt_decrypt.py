@@ -127,12 +127,3 @@ def add_key_markers(key_content, key_type="PRIVATE"):
         return f"-----BEGIN PUBLIC KEY-----\n{key_content}\n-----END PUBLIC KEY-----"
     else:
         raise ValueError("Invalid key type. Use 'PRIVATE' or 'PUBLIC'.")
-
-
-
-# Contoh penggunaan
-private_key, public_key = generate_ecc_keys()
-private_key_content = extract_key_content(private_key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()))
-
-# encrypted_text, space_positions = super_encrypt("BELAJAR KRIPTOGRAFI UNTUK INDONESIA MERDEKA SUPAYA MENJADI BANGSA YANG ADIL MAKMUR DAN SEJAHTERA MENUJU INDONESIA EMAS", 18, public_key, private_key)
-# super_decrypt(encrypted_text, 18, space_positions, private_key_content)

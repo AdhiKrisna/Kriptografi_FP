@@ -1,67 +1,94 @@
 from PIL import Image
+import io
 
+# Convert encoding data into 8-bit binary form using ASCII value of characters
+def genData(data):
+    newd = []
+    for i in data:
+        newd.append(format(ord(i), '08b'))
+    return newd
+
+# Modify pixels according to the 8-bit binary data
+def modPix(pix, data):
+    datalist = genData(data)
+    lendata = len(datalist)
+    imdata = iter(pix)
+
+    for i in range(lendata):
+        # Extracting 3 pixels at a time
+        pix = [value for value in imdata.__next__()[:3] +
+                            imdata.__next__()[:3] +
+                            imdata.__next__()[:3]]
+
+        # Modify pixel values
+        for j in range(0, 8):
+            if (datalist[i][j] == '0' and pix[j] % 2 != 0):
+                pix[j] -= 1
+            elif (datalist[i][j] == '1' and pix[j] % 2 == 0):
+                if pix[j] != 0:
+                    pix[j] -= 1
+                else:
+                    pix[j] += 1
+
+        # Set the stopping condition
+        if i == lendata - 1:
+            if pix[-1] % 2 == 0:
+                if pix[-1] != 0:
+                    pix[-1] -= 1
+                else:
+                    pix[-1] += 1
+        else:
+            if pix[-1] % 2 != 0:
+                pix[-1] -= 1
+
+        pix = tuple(pix)
+        yield pix[0:3]
+        yield pix[3:6]
+        yield pix[6:9]
+
+# Encode the data into the image
 def encode_image(image_data, output_image_path, message):
     """Embed a message in an image."""
     img = Image.open(image_data)
-    encoded = img.copy()
+    newimg = img.copy()
 
-    width, height = img.size
-    max_message_length = width * height * 3 // 8  # Maximum characters the image can hold
+    # Ensure there is data to encode
+    if len(message) == 0:
+        raise ValueError("Data to be encoded is empty")
 
-    # Check if the message is too long for the image
-    if len(message) + 3 > max_message_length:  # +3 for the "###" end marker
-        raise ValueError("Message is too long to be encoded in the image.")
+    # Embed the data into the image
+    for pixel in modPix(newimg.getdata(), message + '###'):  # Append delimiter
+        newimg.putpixel((x, y), pixel)
+        if (x == newimg.width - 1):
+            x = 0
+            y += 1
+        else:
+            x += 1
 
-    # Append end marker to message
-    message += '###'
-
-    # Convert message to binary
-    binary_message = ''.join([format(ord(char), '08b') for char in message])
-    message_length = len(binary_message)
-
-    index = 0
-    for y in range(height):
-        for x in range(width):
-            if index < message_length:
-                r, g, b = img.getpixel((x, y))
-
-                # Embed bits into R, G, and B channels
-                r = (r & ~1) | int(binary_message[index]) if index < message_length else r
-                g = (g & ~1) | int(binary_message[index + 1]) if index + 1 < message_length else g
-                b = (b & ~1) | int(binary_message[index + 2]) if index + 2 < message_length else b
-
-                # Update the pixel in the new image
-                encoded.putpixel((x, y), (r, g, b))
-                index += 3
-
-            if index >= message_length:
-                break
-        if index >= message_length:
-            break
-
-    encoded.save(output_image_path)
+    # Save the new image with the embedded data
+    newimg.save(output_image_path)
     return output_image_path
 
-
+# Decode the hidden data from the image
 def decode_image(input_image_path):
-    """Extract a hidden message from an image."""
+    """Extract the hidden message from an image."""
     img = Image.open(input_image_path)
-    binary_message = ""
+    imgdata = iter(img.getdata())
+    
+    data = ''
+    while True:
+        pixels = [value for value in imgdata.__next__()[:3] +
+                                imgdata.__next__()[:3] +
+                                imgdata.__next__()[:3]]
+        
+        # Binary data string
+        binstr = ''
+        for i in pixels[:8]:
+            binstr += '0' if i % 2 == 0 else '1'
 
-    width, height = img.size
-    for y in range(height):
-        for x in range(width):
-            r, g, b = img.getpixel((x, y))
-            binary_message += str(r & 1)
-            binary_message += str(g & 1)
-            binary_message += str(b & 1)
-
-    # Convert binary to characters
-    chars = [binary_message[i:i + 8] for i in range(0, len(binary_message), 8)]
-    decoded_message = ''.join([chr(int(char, 2)) for char in chars if len(char) == 8])
-
-    # Look for the end marker '###'
-    end_index = decoded_message.find('###')
-    if end_index != -1:
-        return decoded_message[:end_index]
-    return "Tidak ditemukan pesan yang tersembunyi"
+        # Convert binary string to character
+        data += chr(int(binstr, 2))
+        
+        # Check if the delimiter is reached
+        if pixels[-1] % 2 != 0:
+            return data.rstrip('###')
