@@ -1,77 +1,66 @@
 from PIL import Image
 
 def encode_image(image_data, output_image_path, message):
-    """Menyisipkan pesan ke dalam gambar."""
-    # Membuka gambar dari BytesIO
+    """Embed a message in an image."""
     img = Image.open(image_data)
     encoded = img.copy()
 
     width, height = img.size
-    index = 0
+    max_message_length = width * height * 3 // 8  # Maximum characters the image can hold
 
-    # Tambahkan karakter pembatas di akhir pesan untuk menandai akhir pesan
+    # Check if the message is too long for the image
+    if len(message) + 3 > max_message_length:  # +3 for the "###" end marker
+        raise ValueError("Message is too long to be encoded in the image.")
+
+    # Append end marker to message
     message += '###'
-    
-    # Konversi pesan ke dalam bentuk biner
+
+    # Convert message to binary
     binary_message = ''.join([format(ord(char), '08b') for char in message])
     message_length = len(binary_message)
-    
+
+    index = 0
     for y in range(height):
         for x in range(width):
-            # Ambil nilai RGB dari pixel
-            r, g, b = img.getpixel((x, y))
-
-            # Modifikasi bit paling tidak signifikan dari warna merah (R)
             if index < message_length:
-                r = (r & ~1) | int(binary_message[index])
-                index += 1
+                r, g, b = img.getpixel((x, y))
 
-            # Modifikasi bit paling tidak signifikan dari warna hijau (G)
-            if index < message_length:
-                g = (g & ~1) | int(binary_message[index])
-                index += 1
+                # Embed bits into R, G, and B channels
+                r = (r & ~1) | int(binary_message[index]) if index < message_length else r
+                g = (g & ~1) | int(binary_message[index + 1]) if index + 1 < message_length else g
+                b = (b & ~1) | int(binary_message[index + 2]) if index + 2 < message_length else b
 
-            # Modifikasi bit paling tidak signifikan dari warna biru (B)
-            if index < message_length:
-                b = (b & ~1) | int(binary_message[index])
-                index += 1
+                # Update the pixel in the new image
+                encoded.putpixel((x, y), (r, g, b))
+                index += 3
 
-            # Update pixel dengan nilai RGB baru
-            encoded.putpixel((x, y), (r, g, b))
-
-            # Jika pesan sudah selesai disisipkan, keluar dari loop
             if index >= message_length:
                 break
         if index >= message_length:
             break
 
-    # Simpan gambar yang telah disisipi pesan
     encoded.save(output_image_path)
     return output_image_path
 
 
-# Fungsi untuk mengekstrak data dari gambar
 def decode_image(input_image_path):
-    """Ekstrak pesan dari gambar."""
+    """Extract a hidden message from an image."""
     img = Image.open(input_image_path)
     binary_message = ""
-    
-    width, height = img.size
 
+    width, height = img.size
     for y in range(height):
         for x in range(width):
             r, g, b = img.getpixel((x, y))
-
-            # Ambil bit paling tidak signifikan dari setiap warna (RGB)
             binary_message += str(r & 1)
             binary_message += str(g & 1)
             binary_message += str(b & 1)
 
-    # Konversi biner menjadi teks
+    # Convert binary to characters
     chars = [binary_message[i:i + 8] for i in range(0, len(binary_message), 8)]
     decoded_message = ''.join([chr(int(char, 2)) for char in chars if len(char) == 8])
 
-    # Cari pembatas '###' untuk menandai akhir pesan
+    # Look for the end marker '###'
     end_index = decoded_message.find('###')
     if end_index != -1:
         return decoded_message[:end_index]
