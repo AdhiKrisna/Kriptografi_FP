@@ -26,9 +26,9 @@ def dashboard(page):
                     st.write(f":green[{super_encrypted}]")
                     st.subheader(f"Space Positions:")
                     st.write(f":green[{space_positions}]")
-                    st.subheader(f"iv: {iv}")
-                    st.subheader(f"tag: {tag}")
-                    st.subheader(f"salt: {salt}")
+                    st.subheader(f"iv: {iv.decode()}")
+                    st.subheader(f"tag: {tag.decode()}")
+                    st.subheader(f"salt: {salt.decode()}")
                     st.subheader(f"Please save the encrypted message and space positions for decryption.")
         with tab2:
             st.header("Text Decrypt")
