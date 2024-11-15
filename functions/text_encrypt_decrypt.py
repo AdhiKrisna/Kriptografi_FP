@@ -77,8 +77,8 @@ def generate_ecc_keys():
 
 def ecc_encrypt(message, public_key):
     encoded_message = message.encode()
-    encrypted_message = base64.b64encode(encoded_message).decode()
-    return encrypted_message
+    encrypted = public_key.encrypt(encoded_message, ec.ECIES())
+    return base64.b64encode(encrypted).decode()
 
 def ecc_decrypt(encrypted_message, private_key):
     decoded_message = base64.b64decode(encrypted_message.encode())
