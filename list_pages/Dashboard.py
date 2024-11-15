@@ -1,5 +1,5 @@
 import streamlit as st
-from functions.text_encrypt_decrypt import generate_ecc_keys, super_encrypt, super_decrypt, add_key_markers
+from functions.text_encrypt_decrypt import super_encrypt, super_decrypt
 from functions.steganography_encryption import encode_image,  decode_image
 from functions.file_encrypt import encrypt_file, decrypt_file
 import connection as cn
@@ -20,8 +20,7 @@ def dashboard(page):
                     st.error("Please input a message.")
                     st.stop()
                 with st.expander(":green[See Result]"):
-                    private_key, public_key = generate_ecc_keys()
-                    super_encrypted, space_positions = super_encrypt(message, railKey, public_key, private_key)
+                    super_encrypted, space_positions = super_encrypt(message, railKey)
                     st.subheader(f"Encrypted Message: ")
                     st.write(f":green[{super_encrypted}]")
                     st.subheader(f"Space Positions:")
@@ -36,9 +35,7 @@ def dashboard(page):
                 with st.expander(":green[See Result]"):
                     query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
                     if query is not None and not query.empty:
-                        private_key = query.private_key[0]
-                        ecc_private_key = add_key_markers(private_key, "PRIVATE")
-                        decrypted_message = super_decrypt(encryptedText, railKey, spacePosition, ecc_private_key)
+                        decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
                         st.subheader(f"Decrypted Message: ")
                         st.write(f":green[{decrypted_message}]")
                     else:
