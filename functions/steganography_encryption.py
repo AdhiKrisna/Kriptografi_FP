@@ -55,7 +55,7 @@ def encode_image(image_data, output_image_path, message):
     # Ensure there is data to encode
     if len(message) == 0:
         raise ValueError("Data to be encoded is empty")
-
+    x, y = 0, 0
     # Embed the data into the image
     for pixel in modPix(newimg.getdata(), message + '###'):  # Append delimiter
         newimg.putpixel((x, y), pixel)
