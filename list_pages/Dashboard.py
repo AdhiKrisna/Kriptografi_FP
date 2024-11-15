@@ -22,9 +22,9 @@ def dashboard(page):
                 with st.expander(":green[See Result]"):
                     super_encrypted, space_positions = super_encrypt(message, railKey)
                     st.subheader(f"Encrypted Message: ")
-                    st.code(super_encrypted, language='text')
+                    st.code(f":green[{super_encrypted}]", language='text', line_numbers=True)
                     st.subheader(f"Space Positions:")
-                    st.code(f"{space_positions}", language='text')
+                    st.code(f":green[{space_positions}]", language='text', line_numbers=True)
                     st.subheader(f"Please save the encrypted message and space positions for decryption.")
         with tab2:
             st.header("Text Decrypt")
