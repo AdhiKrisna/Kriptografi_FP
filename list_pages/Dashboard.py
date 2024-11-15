@@ -21,7 +21,7 @@ def dashboard(page):
                     st.stop()
                 with st.expander(":green[See Result]"):
                     private_key, public_key = generate_ecc_keys()
-                    super_encrypted, space_positions = super_encrypt(message, railKey, public_key, private_key)
+                    super_encrypted, space_positions = super_encrypt(message, railKey, public_key, private_key, railKey)
                     st.subheader(f"Encrypted Message: ")
                     st.write(f":green[{super_encrypted}]")
                     st.subheader(f"Space Positions:")

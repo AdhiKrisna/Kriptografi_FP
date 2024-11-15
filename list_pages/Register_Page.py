@@ -1,6 +1,7 @@
 import streamlit as st
 import connection as cn
 from cryptography.fernet import Fernet
+import app as app
 
 def register():
     st.header("Register Page (Fernet Encryption)")
@@ -26,6 +27,8 @@ def register():
             params = (username, encPass, key.decode())
             cn.run_query(query, params, fetch=False)
             st.success(f"User with username '{username}' has been registered successfully. You can now login.")
+            app.page = "Login"
+            st.rerun()
         else:
             st.error("Username already exists.")
 
