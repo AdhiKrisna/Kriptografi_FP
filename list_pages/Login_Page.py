@@ -32,7 +32,7 @@ def login():
                     st.success("Login successful!")
                     st.session_state["is_logged_in"] = True
                     st.session_state["username"] = username
-                    # st.experimental_rerun()
+                    st.experimental_rerun()
                     return
                 
             # Jika tidak ada username yang cocok
