@@ -148,7 +148,8 @@ def super_encrypt(message, rail_key):
     private_key_content, public_key_content = get_key_base64(private_key, public_key)
     
     query = "INSERT INTO messages (encrypted_text, rail_fence_key, space_position, private_key_content, public_key_content) VALUES (%s, %s, %s, %s, %s)"
-    cn.run_query(query, (ecc_encrypted, rail_key, str(space_positions), private_key_content, public_key_content))
+    params = (ecc_encrypted, rail_key, str(space_positions), private_key_content, public_key_content)
+    cn.run_query(query, params, fetch=False)
     return ecc_encrypted, space_positions
 
 # Super Decryption Function
