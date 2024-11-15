@@ -69,7 +69,7 @@ def decode_image(input_image_path):
 
     # Konversi biner menjadi teks
     chars = [binary_message[i:i + 8] for i in range(0, len(binary_message), 8)]
-    decoded_message = ''.join([chr(int(char, 2)) for char in chars])
+    decoded_message = ''.join([chr(int(char, 2)) for char in chars if len(char) == 8])
 
     # Cari pembatas '###' untuk menandai akhir pesan
     end_index = decoded_message.find('###')
