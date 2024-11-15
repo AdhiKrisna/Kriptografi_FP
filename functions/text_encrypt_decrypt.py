@@ -1,12 +1,10 @@
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import os
-import base64
 import connection as cn
-
 
 # Algoritma Rail Fence Cipher dengan penanganan spasi
 def rail_fence_encrypt(text, key):
@@ -79,45 +77,37 @@ def generate_ecc_keys():
     public_key = private_key.public_key()
     return private_key, public_key
 
-def ecc_encrypt(message, public_key):
-    shared_key = public_key.exchange(ec.ECDH(), ec.generate_private_key(ec.SECP256R1()))
-    derived_key = HKDF(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=None,
-        info=b'handshake data'
-    ).derive(shared_key)
-    
-    iv = os.urandom(12)
-    encryptor = Cipher(
-        algorithms.AES(derived_key),
-        modes.GCM(iv)
-    ).encryptor()
-    
-    encrypted_message = encryptor.update(message.encode()) + encryptor.finalize()
-    return base64.b64encode(iv + encryptor.tag + encrypted_message).decode()
+# Function to encrypt a message with ECC public key
+def ecc_encrypt(message, public_key, private_key):
+    # Encrypting with ECC requires creating a shared secret, so ECC alone does not directly encrypt data
+    # One way is to derive a symmetric key from the public key and use it for encryption
+    shared_key = public_key.exchange(ec.ECDH(), private_key)
+    salt = os.urandom(16)  # Generate a random salt
+    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000)
+    aes_key = kdf.derive(shared_key)
 
-def ecc_decrypt(encrypted_message, private_key):
-    encrypted_message_bytes = base64.b64decode(encrypted_message.encode())
-    iv = encrypted_message_bytes[:12]
-    tag = encrypted_message_bytes[12:28]
-    ciphertext = encrypted_message_bytes[28:]
+    # Encrypt the message with AES-GCM
+    iv = os.urandom(12)
+    cipher = Cipher(algorithms.AES(aes_key), modes.GCM(iv))
+    encryptor = cipher.encryptor()
+    encrypted_message = encryptor.update(message.encode()) + encryptor.finalize()
+
+    # Return the encrypted message with necessary information for decryption
+    return encrypted_message, iv, encryptor.tag, salt
+
+# Function to decrypt with ECC private key
+def ecc_decrypt(encrypted_message, iv, tag, salt, private_key):
+    # Derive the shared key from the private key and the original public key
+    shared_key = private_key.exchange(ec.ECDH(), private_key)
+    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000)
+    aes_key = kdf.derive(shared_key)
+
+    # Decrypt the message with AES-GCM
+    cipher = Cipher(algorithms.AES(aes_key), modes.GCM(iv, tag))
+    decryptor = cipher.decryptor()
+    decrypted_message = decryptor.update(encrypted_message) + decryptor.finalize()
     
-    shared_key = private_key.exchange(ec.ECDH(), ec.generate_private_key(ec.SECP256R1().public_key()))
-    derived_key = HKDF(
-        algorithm=hashes.SHA256(),
-        length=32,
-        salt=None,
-        info=b'handshake data'
-    ).derive(shared_key)
-    
-    decryptor = Cipher(
-        algorithms.AES(derived_key),
-        modes.GCM(iv, tag)
-    ).decryptor()
-    
-    decoded_message = decryptor.update(ciphertext) + decryptor.finalize()
-    return decoded_message.decode()
+    return decrypted_message.decode()
 
 # Super Encryption Function
 def super_encrypt(message, rail_key, ecc_public_key, ecc_private_key):
@@ -128,7 +118,7 @@ def super_encrypt(message, rail_key, ecc_public_key, ecc_private_key):
     
     # Step 2: Encrypt with ECC (Elliptic Curve Cryptography)
     private_key_content = extract_key_content(ecc_private_key.private_bytes(encoding=serialization.Encoding.PEM, format=serialization.PrivateFormat.PKCS8, encryption_algorithm=serialization.NoEncryption()))
-    ecc_encrypted = ecc_encrypt(rail_encrypted, ecc_public_key)
+    ecc_encrypted = ecc_encrypt(rail_encrypted, ecc_public_key, ecc_private_key)
     query = "INSERT INTO messages (encrypted_text, private_key, space_position, rail_fence_key) VALUES (%s, %s, %s, %s);"
     cn.run_query(query, (ecc_encrypted, private_key_content, str(space_positions), rail_key), fetch=False)
     return ecc_encrypted, space_positions
@@ -162,3 +152,4 @@ def add_key_markers(key_content, key_type="PRIVATE"):
         return f"-----BEGIN PUBLIC KEY-----\n{key_content}\n-----END PUBLIC KEY-----"
     else:
         raise ValueError("Invalid key type. Use 'PRIVATE' or 'PUBLIC'.")
+
