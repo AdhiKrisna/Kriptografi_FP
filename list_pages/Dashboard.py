@@ -38,7 +38,7 @@ def dashboard(page):
                     if query is not None and not query.empty:
                         private_key = query.private_key[0]
                         ecc_private_key = add_key_markers(private_key, "PRIVATE")
-                        decrypted_message = super_decrypt(encryptedText, railKey, spacePosition, ecc_private_key, query.iv[0], query.tag[0], query.salt[0])
+                        decrypted_message = super_decrypt(encryptedText, railKey, spacePosition, ecc_private_key)
                         st.subheader(f"Decrypted Message: ")
                         st.write(f":green[{decrypted_message}]")
                     else:
@@ -58,8 +58,6 @@ def dashboard(page):
             if message != '' and image_file:
                 # image_file_data = image_file.read()
                 if st.button("Encrypt and Save"):
-                    message += '###'
-                    st.write(f"Message: {message}") 
                     hidden_image_path = encode_image(image_file, output_image_path, message)
                     st.success(f"File has been hidden in image: {hidden_image_path}")
                     with open(hidden_image_path, "rb") as img_file:
