@@ -1,12 +1,13 @@
 import mysql.connector
 from mysql.connector import Error
+import psycopg2
 import pandas as pd
 import streamlit as st
 
 # Initialize connection
 def create_connection():
     try:
-        connection = mysql.connector.connect(
+        connection = psycopg2.connect(
             host=st.secrets["host"],
             user=st.secrets["username"],
             password=st.secrets["password"],
@@ -45,7 +46,7 @@ def run_query(query, params=None, fetch=True):
             else:
                 conn.commit()
                 return None
-        except mysql.connector.Error as e:
+        except Exception as e:
             st.error(f"Error executing query: {e}")
             return None
         finally:
