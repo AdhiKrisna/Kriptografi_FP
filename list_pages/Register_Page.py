@@ -22,7 +22,7 @@ def register():
 
         query = cn.run_query("SELECT * FROM users WHERE username = '" + username + "';", fetch=True)
         if query.empty:
-            query = "INSERT INTO users (username, password, fernetKey) VALUES (%s, %s, %s);"
+            query = "INSERT INTO users (username, password, fernetkey) VALUES (%s, %s, %s);"
             params = (username, encPass, key.decode())
             cn.run_query(query, params, fetch=False)
             st.success(f"User with username '{username}' has been registered successfully. You can now login.")
