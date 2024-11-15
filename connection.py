@@ -11,7 +11,7 @@ def create_connection():
             user=st.secrets["username"],
             password=st.secrets["password"],
             database=st.secrets["database"],
-            port=st.secrets.get("port", 3306)
+            port=st.secrets.get("port", 6543)
         )
         return connection
     except Error as e:
