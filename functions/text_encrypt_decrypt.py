@@ -135,6 +135,40 @@ def ecc_decrypt(encrypted_message, private_key, public_key):
 
     return decrypted_message_str  # Return the original decrypted message (without padding)
 
+def encode_to_base64(data):
+    """Encode data (bytes) to Base64."""
+    return base64.b64encode(data).decode('utf-8')
+
+def get_key_base64(private_key, public_key):
+    # Mendapatkan private key dalam bentuk DER (bytes)
+    private_key_der = private_key.private_bytes(
+        encoding=serialization.Encoding.DER,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption()
+    )
+    
+    # Mendapatkan public key dalam bentuk DER (bytes)
+    public_key_der = public_key.public_bytes(
+        encoding=serialization.Encoding.DER,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+
+    # Encode ke Base64
+    private_key_base64 = encode_to_base64(private_key_der)
+    public_key_base64 = encode_to_base64(public_key_der)
+
+    return private_key_base64, public_key_base64
+
+def load_key_from_base64(base64_key, is_private=True):
+    # Decode Base64 kembali ke DER (biner)
+    key_der = base64.b64decode(base64_key)
+
+    if is_private:
+        # Memuat private key dari DER format
+        return serialization.load_der_private_key(key_der, password=None)
+    else:
+        # Memuat public key dari DER format
+        return serialization.load_der_public_key(key_der)
 
 # Super Encryption Function
 def super_encrypt(message, rail_key):
@@ -172,40 +206,7 @@ def super_decrypt(encrypted_message, rail_key, space_positions):
     print(f"Rail Fence Decrypted: {rail_decrypted}")
     return rail_decrypted
 
-def encode_to_base64(data):
-    """Encode data (bytes) to Base64."""
-    return base64.b64encode(data).decode('utf-8')
 
-def get_key_base64(private_key, public_key):
-    # Mendapatkan private key dalam bentuk DER (bytes)
-    private_key_der = private_key.private_bytes(
-        encoding=serialization.Encoding.DER,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption()
-    )
-    
-    # Mendapatkan public key dalam bentuk DER (bytes)
-    public_key_der = public_key.public_bytes(
-        encoding=serialization.Encoding.DER,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo
-    )
-
-    # Encode ke Base64
-    private_key_base64 = encode_to_base64(private_key_der)
-    public_key_base64 = encode_to_base64(public_key_der)
-
-    return private_key_base64, public_key_base64
-
-def load_key_from_base64(base64_key, is_private=True):
-    # Decode Base64 kembali ke DER (biner)
-    key_der = base64.b64decode(base64_key)
-
-    if is_private:
-        # Memuat private key dari DER format
-        return serialization.load_der_private_key(key_der, password=None)
-    else:
-        # Memuat public key dari DER format
-        return serialization.load_der_public_key(key_der)
 
 # print("Private Key:", private_key)
 # print("Public Key:", public_key)
