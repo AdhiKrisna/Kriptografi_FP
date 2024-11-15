@@ -14,7 +14,7 @@ def login():
     if st.button("Login"):
         # Query data
         query = cn.run_query(query="SELECT username, password, fernetkey FROM users;")
-        
+        st.write("Query Result:", query)
         # Pastikan hasil query tidak kosong
         if query is not None and not query.empty:
             for _, row in query.iterrows():
