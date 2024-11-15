@@ -58,6 +58,8 @@ def dashboard(page):
             if message != '' and image_file:
                 # image_file_data = image_file.read()
                 if st.button("Encrypt and Save"):
+                    message += '###'
+                    st.write(f"Message: {message}") 
                     hidden_image_path = encode_image(image_file, output_image_path, message)
                     st.success(f"File has been hidden in image: {hidden_image_path}")
                     with open(hidden_image_path, "rb") as img_file:
