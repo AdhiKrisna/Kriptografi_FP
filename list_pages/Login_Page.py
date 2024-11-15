@@ -18,7 +18,7 @@ def login():
         # Pastikan hasil query tidak kosong
         if query is not None and not query.empty:
             for _, row in query.iterrows():
-                key = row['fernetkey']
+                key = row.get('fernetKey')
                 fernet = Fernet(key.encode())
                 
                 # Mendekripsi password
