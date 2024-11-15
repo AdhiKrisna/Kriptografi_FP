@@ -13,12 +13,12 @@ def login():
 
     if st.button("Login"):
         # Query data
-        query = cn.run_query(query="SELECT username, password, fernetKey FROM users;")
+        query = cn.run_query(query="SELECT username, password, fernetkey FROM users;")
         
         # Pastikan hasil query tidak kosong
         if query is not None and not query.empty:
             for _, row in query.iterrows():
-                key = row.get('fernetkey')
+                key = row['fernetkey']
                 fernet = Fernet(key.encode())
                 
                 # Mendekripsi password
