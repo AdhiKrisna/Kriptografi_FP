@@ -53,7 +53,7 @@ def dashboard(page):
             # Pilih file untuk dienkripsi
             message = st.text_area("Input Plain Text Message")
             output_image_path = 'encrypted_image.png'
-            image_file = st.file_uploader("Upload a cover image", type=["jpg", "jpeg", "webp", "tiff", "bmp", "gif"])
+            image_file = st.file_uploader("Upload a cover image", type=["png", "jpg", "jpeg", "webp", "tiff", "bmp", "gif"])
             if message != '' and image_file:
                 # image_file_data = image_file.read()
                 if st.button("Encrypt and Save"):
