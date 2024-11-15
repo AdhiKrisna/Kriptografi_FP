@@ -18,7 +18,7 @@ def login():
         # Print results
         if query is not None and not query.empty:
             for row in query.itertuples():
-                key = row.fernetKey
+                key = row.fernetkey
                 fernet = Fernet(key.encode()) # encode to convert string to bytes
                 decPass = fernet.decrypt(row.password).decode() 
                 if(username == row.username and password == decPass):
