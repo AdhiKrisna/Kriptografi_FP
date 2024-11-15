@@ -8,11 +8,11 @@
 # pycryptodome==3.10.1
 
 streamlit
-# mysql-connector-python 
+mysql-connector-python 
 sqlalchemy
 cryptography
 pandas 
 numpy>=1.25.0
 pycryptodome 
-# setuptools
+setuptools
 psycopg2-binary
