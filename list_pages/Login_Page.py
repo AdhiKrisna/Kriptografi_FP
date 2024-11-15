@@ -14,7 +14,7 @@ def login():
 
     if st.button("Login"):
         # Query data
-        query = cn.run_query("SELECT * FROM users;")
+        query = cn.run_query(query="SELECT * FROM users;")
         # Print results
         if query is not None and not query.empty:
             for row in query.itertuples():
