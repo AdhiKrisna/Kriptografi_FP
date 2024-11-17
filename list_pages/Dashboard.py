@@ -38,7 +38,7 @@ def dashboard(page):
                     query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
                     st.write(query)
                     if query is not None and not query.empty:
-                        spacePosition = query['space_positions'][0]
+                        spacePosition = query['space_position'][0]
                         decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
                         st.subheader(f"Decrypted Message: ")
                         st.write(f":green[{decrypted_message}]")
