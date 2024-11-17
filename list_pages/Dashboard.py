@@ -24,10 +24,10 @@ def dashboard(page):
                     st.subheader(f"Encrypted Message: ")
                     st.write(f":green[{super_encrypted}]")
                     st.code(f"{super_encrypted}", language='text', line_numbers=True)
-                    st.subheader(f"Space Positions:")
-                    st.write(f":green[{space_positions}]")
-                    st.code(f"{space_positions}", language='text', line_numbers=True)
-                    st.subheader(f"Please copy the encrypted message and space positions for decryption.")
+                    # st.subheader(f"Space Positions:")
+                    # st.write(f":green[{space_positions}]")
+                    # st.code(f"{space_positions}", language='text', line_numbers=True)
+                    st.subheader(f"Please copy the encrypted message for decryption.")
         with tab2:
             st.header("Text Decrypt")
             encryptedText = st.text_area("Input Encrypted Message")
@@ -37,6 +37,7 @@ def dashboard(page):
                 with st.expander(":green[See Result]"):
                     query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
                     if query is not None and not query.empty:
+                        spacePosition = query['space_positions'].values[0]
                         decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
                         st.subheader(f"Decrypted Message: ")
                         st.write(f":green[{decrypted_message}]")
