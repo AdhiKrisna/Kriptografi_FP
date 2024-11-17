@@ -32,10 +32,11 @@ def dashboard(page):
             st.header("Text Decrypt")
             encryptedText = st.text_area("Input Encrypted Message")
             railKey = st.number_input(label='Rail and Fence Key Decrypt', min_value=2, max_value=1000, value=2)  
-            spacePosition = st.text_input("Input Space Positions")
+            # spacePosition = st.text_input("Input Space Positions")
             if st.button("Decrypt"):
                 with st.expander(":green[See Result]"):
                     query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
+                    st.write(query)
                     if query is not None and not query.empty:
                         spacePosition = query['space_positions'].values[0]
                         decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
