@@ -45,7 +45,7 @@ def dashboard(page):
         pass
     elif page == "Image Steganography":
         col1, col2, col3 = st.columns([3, 1, 10])
-        with col1:
+        with col3:
             st.title("Image Steganography")
             tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
             with tab1:
@@ -82,7 +82,7 @@ def dashboard(page):
             pass
         with col2:
             None
-        with col3:
+        with col1:
             st.image("assets/gambar2.png", width=400)
     elif page == "File Encrypt":
         st.title("File Encryption and Decryption using ChaCha20")
