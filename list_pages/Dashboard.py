@@ -24,9 +24,6 @@ def dashboard(page):
                     st.subheader(f"Encrypted Message: ")
                     st.write(f":green[{super_encrypted}]")
                     st.code(f"{super_encrypted}", language='text', line_numbers=True)
-                    # st.subheader(f"Space Positions:")
-                    # st.write(f":green[{space_positions}]")
-                    # st.code(f"{space_positions}", language='text', line_numbers=True)
                     st.subheader(f"Please copy the encrypted message for decryption.")
         with tab2:
             st.header("Text Decrypt")
