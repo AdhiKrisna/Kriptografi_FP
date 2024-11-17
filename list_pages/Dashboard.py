@@ -8,7 +8,7 @@ import base64
 import os
 
 def dashboard(page):
-    col1, col2, col3 = st.columns([5, 1, 15])
+    col1, col2, col3 = st.columns([5, 1, 10])
     if page == "Kotak Pandora":
         with col3:
             st.title("Message Cryptography using Rail Fence and ECC (Elliptic Curve Cryptography)")
@@ -48,9 +48,9 @@ def dashboard(page):
         with col2:
             None
         with col1:
-            st.image("assets/gambar.png", width=400)
+            st.image("assets/gambar2.png", width=400)
     elif page == "Galeri Stegano":
-        col1, col2, col3 = st.columns([15, 1, 15])
+        col1, col2, col3 = st.columns([15, 1, 10])
         with col1:
             st.title("Image Steganography")
             tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
