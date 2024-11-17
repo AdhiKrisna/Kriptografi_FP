@@ -8,44 +8,44 @@ import base64
 import os
 
 def dashboard(page):
-    col1, col2, col3 = st.columns([3, 1, 10])
-    with col3:
-        if page == "Message Cryptography":
-            st.title("Message Cryptography using Rail Fence and ECC (Elliptic Curve Cryptography)")
-            tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
-            with tab1:
-                st.header("Text Encrypt")
-                message = st.text_area("Input Plain Text Message")
-                railKey = st.number_input(label='Rail and Fence Key', min_value=2, max_value=1000, value=2)  
-                if st.button("Encrypt"):
-                    if message == "":
-                        st.error("Please input a message.")
+    if page == "Message Cryptography":
+        st.title("Message Cryptography using Rail Fence and ECC (Elliptic Curve Cryptography)")
+        tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
+        with tab1:
+            st.header("Text Encrypt")
+            message = st.text_area("Input Plain Text Message")
+            railKey = st.number_input(label='Rail and Fence Key', min_value=2, max_value=1000, value=2)  
+            if st.button("Encrypt"):
+                if message == "":
+                    st.error("Please input a message.")
+                    st.stop()
+                with st.expander(":green[See Result]"):
+                    super_encrypted, space_positions = super_encrypt(message, railKey)
+                    st.subheader(f"Encrypted Message: ")
+                    st.write(f":green[{super_encrypted}]")
+                    st.code(f"{super_encrypted}", language='text', line_numbers=True)
+                    st.subheader(f"Please copy the encrypted message for decryption.")
+        with tab2:
+            st.header("Text Decrypt")
+            encryptedText = st.text_area("Input Encrypted Message")
+            railKey = st.number_input(label='Rail and Fence Key Decrypt', min_value=2, max_value=1000, value=2)  
+            # spacePosition = st.text_input("Input Space Positions")
+            if st.button("Decrypt"):
+                with st.expander(":green[See Result]"):
+                    query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
+                    st.write(query)
+                    if query is not None and not query.empty:
+                        spacePosition = query['space_position'][0]
+                        decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
+                        st.subheader(f"Decrypted Message: ")
+                        st.write(f":green[{decrypted_message}]")
+                    else:
+                        st.error("No data found.")
                         st.stop()
-                    with st.expander(":green[See Result]"):
-                        super_encrypted, space_positions = super_encrypt(message, railKey)
-                        st.subheader(f"Encrypted Message: ")
-                        st.write(f":green[{super_encrypted}]")
-                        st.code(f"{super_encrypted}", language='text', line_numbers=True)
-                        st.subheader(f"Please copy the encrypted message for decryption.")
-            with tab2:
-                st.header("Text Decrypt")
-                encryptedText = st.text_area("Input Encrypted Message")
-                railKey = st.number_input(label='Rail and Fence Key Decrypt', min_value=2, max_value=1000, value=2)  
-                # spacePosition = st.text_input("Input Space Positions")
-                if st.button("Decrypt"):
-                    with st.expander(":green[See Result]"):
-                        query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
-                        st.write(query)
-                        if query is not None and not query.empty:
-                            spacePosition = query['space_position'][0]
-                            decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
-                            st.subheader(f"Decrypted Message: ")
-                            st.write(f":green[{decrypted_message}]")
-                        else:
-                            st.error("No data found.")
-                            st.stop()
-            pass
-        elif page == "Image Steganography":
+        pass
+    elif page == "Image Steganography":
+        col1, col2, col3 = st.columns([3, 1, 10])
+        with col1:
             st.title("Image Steganography")
             tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
             with tab1:
@@ -80,63 +80,64 @@ def dashboard(page):
                             except Exception as e:
                                 st.error(f"An error occurred while decrypting the image: {e}")
             pass
-        elif page == "File Encrypt":
-            st.title("File Encryption and Decryption using ChaCha20")
-            tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
-            with tab1:
-                st.header("File Encrypt")
-                file_to_encrypt = st.file_uploader("Upload a file to encrypt", type=["txt", "pdf", "docx", "xlsx", "csv", "png", "jpg", "jpeg"])
-                if file_to_encrypt is not None:
-                    input_data = file_to_encrypt.read()
-                    file_name = file_to_encrypt.name
-                    if st.button("Encrypt"):
-                        key = get_random_bytes(32)  
-                        st.write(":green[Encryption Key (Base64):]")
-                        st.write(base64.b64encode(key).decode())
-                        encrypted_data = encrypt_file(input_data, key)
-                        st.success("File has been encrypted!\n Please save the key and the encrypted bin file to decrypt the file.")
-                        
-                        # Tombol untuk mengunduh file terenkripsi
-                        st.download_button(
-                            label="Download Encrypted File",
-                            data=encrypted_data,
-                            file_name=f"{file_name}.bin",
-                            mime="application/octet-stream"
-                        )
-            with tab2:
-                st.header("File Decrypt")
-                file_to_decrypt = st.file_uploader("Upload an encrypted file", type=["bin"])
-                if file_to_decrypt is not None:
-                    encrypted_data = file_to_decrypt.read()
-                    key_input = st.text_input("Input Key (Base64)")
-                    if key_input:
-                        try:
-                            # Decode the Base64 input key to bytes
-                            key = base64.b64decode(key_input)
-                            if len(key) != 32:
-                                st.error("The key must be exactly 32 bytes long.")
-                            else:
-                                if st.button("Decrypt"):
-                                    decrypted_data = decrypt_file(encrypted_data, key)
-                                    original_filename = os.path.splitext(file_to_decrypt.name)[0]
-                                    file_extension = original_filename.split('.')[-1] if '.' in original_filename else "txt"
-                                    original_filename_ = original_filename.split('.')[0]
-                                    st.write("File Name: ", original_filename_)
-                                    st.success("File has been decrypted!")
-                                    # Tombol untuk mengunduh file yang didekripsi
-                                    st.download_button(
-                                        label="Download Decrypted File",
-                                        data=decrypted_data,
-                                        file_name=f"{original_filename_}_decrypted.{file_extension}",
-                                        mime="text/plain"
-                                    )
-                        except Exception as e:
-                            st.error(f"Decryption failed: {e}")
-            pass
-    with col2:
-        None
-    with col1:
-        st.image("assets/gambar.png", width=200)
+        with col2:
+            None
+        with col3:
+            st.image("assets/gambar2.png", width=400)
+    elif page == "File Encrypt":
+        st.title("File Encryption and Decryption using ChaCha20")
+        tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
+        with tab1:
+            st.header("File Encrypt")
+            file_to_encrypt = st.file_uploader("Upload a file to encrypt", type=["txt", "pdf", "docx", "xlsx", "csv", "png", "jpg", "jpeg"])
+            if file_to_encrypt is not None:
+                input_data = file_to_encrypt.read()
+                file_name = file_to_encrypt.name
+                if st.button("Encrypt"):
+                    key = get_random_bytes(32)  
+                    st.write(":green[Encryption Key (Base64):]")
+                    st.write(base64.b64encode(key).decode())
+                    encrypted_data = encrypt_file(input_data, key)
+                    st.success("File has been encrypted!\n Please save the key and the encrypted bin file to decrypt the file.")
+                    
+                    # Tombol untuk mengunduh file terenkripsi
+                    st.download_button(
+                        label="Download Encrypted File",
+                        data=encrypted_data,
+                        file_name=f"{file_name}.bin",
+                        mime="application/octet-stream"
+                    )
+        with tab2:
+            st.header("File Decrypt")
+            file_to_decrypt = st.file_uploader("Upload an encrypted file", type=["bin"])
+            if file_to_decrypt is not None:
+                encrypted_data = file_to_decrypt.read()
+                key_input = st.text_input("Input Key (Base64)")
+                if key_input:
+                    try:
+                        # Decode the Base64 input key to bytes
+                        key = base64.b64decode(key_input)
+                        if len(key) != 32:
+                            st.error("The key must be exactly 32 bytes long.")
+                        else:
+                            if st.button("Decrypt"):
+                                decrypted_data = decrypt_file(encrypted_data, key)
+                                original_filename = os.path.splitext(file_to_decrypt.name)[0]
+                                file_extension = original_filename.split('.')[-1] if '.' in original_filename else "txt"
+                                original_filename_ = original_filename.split('.')[0]
+                                st.write("File Name: ", original_filename_)
+                                st.success("File has been decrypted!")
+                                # Tombol untuk mengunduh file yang didekripsi
+                                st.download_button(
+                                    label="Download Decrypted File",
+                                    data=decrypted_data,
+                                    file_name=f"{original_filename_}_decrypted.{file_extension}",
+                                    mime="text/plain"
+                                )
+                    except Exception as e:
+                        st.error(f"Decryption failed: {e}")
+        pass
+    
     col1, col2, col3, col4, col5, col6 , col7= st.columns([1, 1, 1,1,1,1,1])
     with col4:
         if st.button(":red[Logout]"):
