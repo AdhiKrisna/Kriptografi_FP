@@ -48,9 +48,9 @@ def dashboard(page):
         with col2:
             None
         with col1:
-            st.image("assets/gambar1.png", width=400)
+            st.image("assets/gambar.png", width=400)
     elif page == "Galeri Stegano":
-        col1, col2, col3 = st.columns([15, 1, 5])
+        col1, col2, col3 = st.columns([15, 1, 15])
         with col1:
             st.title("Image Steganography")
             tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
