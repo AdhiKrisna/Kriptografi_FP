@@ -6,39 +6,44 @@ if "is_logged_in" not in st.session_state:
     st.session_state["is_logged_in"] = False
 
 def login():
-    st.header("Login Page Fernet Decryption with Key")
+    col1, col2, col3 = st.columns([10, 1, 3])
+    with col1:
+        st.header("Login Page Fernet Decryption with Key")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-
-    if st.button("Login"):
-        # Query data
-        query = cn.run_query(query="SELECT username, password, fernetkey FROM users;")
-        # st.write("Query Result:", query)
-        # Pastikan hasil query tidak kosong
-        if query is not None and not query.empty:
-            for _, row in query.iterrows():
-                key = row['fernetkey']
-                fernet = Fernet(key.encode())
-                
-                # Mendekripsi password
-                try:
-                    decPass = fernet.decrypt(row['password'].encode()).decode() # Decode bytes to string
-                except Exception as e:
-                    st.error(f"Decryption error: {e}")
-                    return
-                
-                if username == row['username'] and password == decPass:
-                    st.success("Login successful!")
-                    st.session_state["is_logged_in"] = True
-                    st.session_state["username"] = username
-                    st.rerun()
-                    return
-                
-            # Jika tidak ada username yang cocok
+        if st.button("Login"):
+            # Query data
+            query = cn.run_query(query="SELECT username, password, fernetkey FROM users;")
+            # st.write("Query Result:", query)
+            # Pastikan hasil query tidak kosong
+            if query is not None and not query.empty:
+                for _, row in query.iterrows():
+                    key = row['fernetkey']
+                    fernet = Fernet(key.encode())
+                    
+                    # Mendekripsi password
+                    try:
+                        decPass = fernet.decrypt(row['password'].encode()).decode() # Decode bytes to string
+                    except Exception as e:
+                        st.error(f"Decryption error: {e}")
+                        return
+                    
+                    if username == row['username'] and password == decPass:
+                        st.success("Login successful!")
+                        st.session_state["is_logged_in"] = True
+                        st.session_state["username"] = username
+                        st.rerun()
+                        return
+                    
+                # Jika tidak ada username yang cocok
             st.error("Login failed. Please check your credentials.")
         else:
             st.error("No data found.")
+    with col2:
+        None
+    with col3:
+        st.image("assets/gambar.png", width=200)
 
 if __name__ == "__main__":
     login()
