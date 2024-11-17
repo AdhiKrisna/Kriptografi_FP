@@ -85,11 +85,11 @@ def dashboard(page):
                                 st.write(f":green[{message}]")
                             except Exception as e:
                                 st.error(f"An error occurred while decrypting the image: {e}")
-            pass
         with col2:
             None
         with col3:
             st.image("assets/gambar3.png", width=400)
+        pass
     elif page == "File Encrypt":
         st.title("File Encryption and Decryption using ChaCha20")
         tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
