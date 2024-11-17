@@ -8,44 +8,50 @@ import base64
 import os
 
 def dashboard(page):
-    if page == "Message Cryptography":
-        st.title("Message Cryptography using Rail Fence and ECC (Elliptic Curve Cryptography)")
-        tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
-        with tab1:
-            st.header("Text Encrypt")
-            message = st.text_area("Input Plain Text Message")
-            railKey = st.number_input(label='Rail and Fence Key', min_value=2, max_value=1000, value=2)  
-            if st.button("Encrypt"):
-                if message == "":
-                    st.error("Please input a message.")
-                    st.stop()
-                with st.expander(":green[See Result]"):
-                    super_encrypted, space_positions = super_encrypt(message, railKey)
-                    st.subheader(f"Encrypted Message: ")
-                    st.write(f":green[{super_encrypted}]")
-                    st.code(f"{super_encrypted}", language='text', line_numbers=True)
-                    st.subheader(f"Please copy the encrypted message for decryption.")
-        with tab2:
-            st.header("Text Decrypt")
-            encryptedText = st.text_area("Input Encrypted Message")
-            railKey = st.number_input(label='Rail and Fence Key Decrypt', min_value=2, max_value=1000, value=2)  
-            # spacePosition = st.text_input("Input Space Positions")
-            if st.button("Decrypt"):
-                with st.expander(":green[See Result]"):
-                    query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
-                    st.write(query)
-                    if query is not None and not query.empty:
-                        spacePosition = query['space_position'][0]
-                        decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
-                        st.subheader(f"Decrypted Message: ")
-                        st.write(f":green[{decrypted_message}]")
-                    else:
-                        st.error("No data found.")
-                        st.stop()
-        pass
-    elif page == "Image Steganography":
-        col1, col2, col3 = st.columns([5, 1, 15])
+    col1, col2, col3 = st.columns([5, 1, 15])
+    if page == "Kotak Pandora":
         with col3:
+            st.title("Message Cryptography using Rail Fence and ECC (Elliptic Curve Cryptography)")
+            tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
+            with tab1:
+                st.header("Text Encrypt")
+                message = st.text_area("Input Plain Text Message")
+                railKey = st.number_input(label='Rail and Fence Key', min_value=2, max_value=1000, value=2)  
+                if st.button("Encrypt"):
+                    if message == "":
+                        st.error("Please input a message.")
+                        st.stop()
+                    with st.expander(":green[See Result]"):
+                        super_encrypted, space_positions = super_encrypt(message, railKey)
+                        st.subheader(f"Encrypted Message: ")
+                        st.write(f":green[{super_encrypted}]")
+                        st.code(f"{super_encrypted}", language='text', line_numbers=True)
+                        st.subheader(f"Please copy the encrypted message for decryption.")
+            with tab2:
+                st.header("Text Decrypt")
+                encryptedText = st.text_area("Input Encrypted Message")
+                railKey = st.number_input(label='Rail and Fence Key Decrypt', min_value=2, max_value=1000, value=2)  
+                # spacePosition = st.text_input("Input Space Positions")
+                if st.button("Decrypt"):
+                    with st.expander(":green[See Result]"):
+                        query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
+                        # st.write(query)
+                        if query is not None and not query.empty:
+                            spacePosition = query['space_position'][0]
+                            decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
+                            st.subheader(f"Decrypted Message: ")
+                            st.write(f":green[{decrypted_message}]")
+                        else:
+                            st.error("No data found.")
+                            st.stop()
+            pass
+        with col2:
+            None
+        with col1:
+            st.image("assets/gambar1.png", width=400)
+    elif page == "Galeri Stegano":
+        col1, col2, col3 = st.columns([15, 1, 5])
+        with col1:
             st.title("Image Steganography")
             tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
             with tab1:
@@ -82,8 +88,8 @@ def dashboard(page):
             pass
         with col2:
             None
-        with col1:
-            st.image("assets/gambar2.png", width=400)
+        with col3:
+            st.image("assets/gambar3.png", width=400)
     elif page == "File Encrypt":
         st.title("File Encryption and Decryption using ChaCha20")
         tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])

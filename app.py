@@ -8,7 +8,7 @@ if st.session_state['is_logged_in']:
     st.sidebar.title("Navigation")
     username = st.session_state['username']
     st.sidebar.success(f"Logged in as {username}")
-    page = st.sidebar.selectbox("Go to", ["Message Cryptography", "Image Steganography", "File Encrypt"])
+    page = st.sidebar.selectbox("Go to", ["Kotak Pandora", "Galeri Stegano", "File Encrypt"])
     Dashboard.dashboard(page)
    
 else:

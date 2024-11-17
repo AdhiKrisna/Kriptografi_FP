@@ -14,14 +14,7 @@ def register():
         if st.button("Register"):
             key = Fernet.generate_key()
             fernet = Fernet(key)
-            encPass = fernet.encrypt(password.encode()).decode() # decode() to convert bytes to string biar bisa masukin ke database varchar
-            # decPass = fernet.decrypt(encPass).decode()  
-            
-            # st.write(key)
-            # st.write(fernet)
-            # st.write(f"Password: {password}")
-            # st.write(f"Encrypted password: {encPass}")
-            # st.write(f"Decrypted password: {decPass}")
+            encPass = fernet.encrypt(password.encode()).decode() # decode() to convert bytes to string biar bisa masukin ke database text
 
             query = cn.run_query("SELECT * FROM users WHERE username = '" + username + "';", fetch=True)
             if query.empty:
