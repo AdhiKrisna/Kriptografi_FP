@@ -12,6 +12,9 @@ def register():
         password = st.text_input("Password", type="password")
 
         if st.button("Register"):
+            if username == "" or password == "":
+                st.error("Please fill in all fields.")
+                st.stop()
             key = Fernet.generate_key()
             fernet = Fernet(key)
             encPass = fernet.encrypt(password.encode()).decode() # decode() to convert bytes to string biar bisa masukin ke database text
