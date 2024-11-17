@@ -1,10 +1,9 @@
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives import serialization, padding, hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
 import base64
-import os
 import connection as cn
 
 
@@ -78,62 +77,67 @@ def generate_ecc_keys():
     public_key = private_key.public_key()
     return private_key, public_key
 
-def ecc_encrypt(message, public_key, private_key):
+# Fungsi untuk enkripsi menggunakan ECC (Elliptic Curve Cryptography)
+def ecc_encrypt(message, fernet_public_key):
     if isinstance(message, str):
-        message = message.encode()  # Convert to bytes if it's a string
-    
-    # Generate a random shared secret using ECDH (Elliptic Curve Diffie-Hellman)
-    shared_secret = private_key.exchange(ec.ECDH(), public_key)
-    
-    # Derive a symmetric key from the shared secret using PBKDF2
-    salt = os.urandom(16)  # Salt for PBKDF2
-    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000, backend=default_backend())
-    symmetric_key = kdf.derive(shared_secret)
-    
-    # Generate a random IV (Initialization Vector) for AES encryption
-    iv = os.urandom(16)
-    
-    # Encrypt the message using AES in CBC mode
-    cipher = Cipher(algorithms.AES(symmetric_key), modes.CBC(iv), backend=default_backend())
-    encryptor = cipher.encryptor()
-    
-    # Make sure the message is padded to be a multiple of 16 bytes (PKCS7 padding)
-    padder = padding.PKCS7(128).padder()  # PKCS7 padding with 128-bit block size
-    padded_message = padder.update(message) + padder.finalize()
-    
-    # Encrypt the padded message
-    encrypted_message = encryptor.update(padded_message) + encryptor.finalize()
-    encrypted_message = iv + salt + encrypted_message
-    encrypted_message = base64.b64encode(encrypted_message).decode('utf-8')
-    
-    # Return IV, Salt, and encrypted message (so we can use the same salt during decryption)
-    return encrypted_message
+        message = message.encode()  # Ubah pesan menjadi bytes jika berupa string
 
-def ecc_decrypt(encrypted_message, private_key, public_key):
-    encrypted_message = base64.b64decode(encrypted_message)
-    # Extract the IV (first 16 bytes), salt (next 16 bytes), and encrypted data
-    iv = encrypted_message[:16]
-    salt = encrypted_message[16:32]
-    encrypted_data = encrypted_message[32:]
+    # Generate ephemeral private key untuk enkripsi
+    # Ephemeral key adalah kunci sementara yang digunakan untuk enkripsi
+    ephemeral_private_key = ec.generate_private_key(ec.SECP256R1(), default_backend())
+    ephemeral_public_key = ephemeral_private_key.public_key()
 
-    # Generate the shared secret using the private key and the public key of the sender
-    shared_secret = private_key.exchange(ec.ECDH(), public_key)
+    # Menghasilkan shared secret menggunakan kunci publik penerima
+    shared_secret = ephemeral_private_key.exchange(ec.ECDH(), fernet_public_key)
+
+    # Gunakan HKDF untuk memperluas shared secret agar sesuai dengan panjang pesan
+    derived_key = HKDF(
+        algorithm=hashes.SHA256(),
+        length=len(message),  # Sesuaikan panjang key dengan panjang pesan
+        salt=None,
+        info=b'ecc-algorithm'
+    ).derive(shared_secret)
     
-    # Derive the symmetric key from the shared secret using PBKDF2 and the same salt
-    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000, backend=default_backend())
-    symmetric_key = kdf.derive(shared_secret)
+    # XOR pesan dengan derived key atau kunci yang sudah diperluas
+    encrypted_message = bytes([m ^ k for m, k in zip(message, derived_key)])
+    
+    # Kembalikan kunci publik ephemeral dan pesan terenkripsi
+    ephemeral_public_key_bytes = ephemeral_public_key.public_bytes(
+        encoding=serialization.Encoding.DER,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo
+    )
+    return encode_to_base64(ephemeral_public_key_bytes + encrypted_message) # Encode ke Base64
 
-    # Decrypt the message using AES in CBC mode
-    cipher = Cipher(algorithms.AES(symmetric_key), modes.CBC(iv), backend=default_backend())
-    decryptor = cipher.decryptor()
-    decrypted_message = decryptor.update(encrypted_data) + decryptor.finalize()
+# Fungsi untuk dekripsi menggunakan ECC (Elliptic Curve Cryptography)
+def ecc_decrypt(encrypted_message, fernet_private_key):
+    # Decode dari Base64
+    encrypted_message_bytes = base64.b64decode(encrypted_message)
 
-    # Remove padding from the decrypted message (PKCS7 unpadding)
-    unpadder = padding.PKCS7(128).unpadder()
-    unpadded_message = unpadder.update(decrypted_message) + unpadder.finalize()
-    decrypted_message_str = unpadded_message.decode('utf-8')  # Decoding to string
+    # Ambil kunci publik ephemeral dan pesan terenkripsi
+    ephemeral_public_key_bytes = encrypted_message_bytes[:91]  # Panjang DER untuk SECP256R1 adalah 91 byte
+    encrypted_data = encrypted_message_bytes[91:]
 
-    return decrypted_message_str  # Return the original decrypted message (without padding)
+    # Muat kunci publik ephemeral
+    ephemeral_public_key = serialization.load_der_public_key(
+        ephemeral_public_key_bytes, backend=default_backend()
+    )
+
+    # Menghasilkan shared secret menggunakan kunci privat penerima dan kunci publik ephemeral
+    shared_secret = fernet_private_key.exchange(ec.ECDH(), ephemeral_public_key)
+
+    # Gunakan HKDF untuk memperluas shared secret menjadi kunci yang cukup panjang
+    # HKDF adalah Key Derivation Function yang menghasilkan kunci yang lebih aman dan sesuai dengan panjang teks
+    derived_key = HKDF(
+        algorithm=hashes.SHA256(),
+        length=len(encrypted_data),  # Sesuaikan panjang key dengan panjang pesan terenkripsi
+        salt=None,
+        info=b'ecc-algorithm'
+    ).derive(shared_secret)
+
+    # XOR pesan terenkripsi dengan derived key untuk dekripsi
+    decrypted_message = bytes([c ^ k for c, k in zip(encrypted_data, derived_key)])
+    
+    return decrypted_message.decode('utf-8') # ini untuk mengbuat pesan kembali dari bite ke bentuk string
 
 def encode_to_base64(data):
     """Encode data (bytes) to Base64."""
@@ -181,23 +185,22 @@ def super_encrypt(message, rail_key):
     ecc_encrypted = ecc_encrypt(rail_encrypted, public_key, private_key)
     private_key_content, public_key_content = get_key_base64(private_key, public_key)
     
-    query = "INSERT INTO messages (encrypted_text, rail_fence_key, space_position, private_key_content, public_key_content) VALUES (%s, %s, %s, %s, %s)"
-    params = (ecc_encrypted, rail_key, str(space_positions), private_key_content, public_key_content)
+    query = "INSERT INTO messages (encrypted_text, rail_fence_key, space_position, private_key_content) VALUES (%s, %s, %s, %s)"
+    params = (ecc_encrypted, rail_key, str(space_positions), private_key_content)
     cn.run_query(query, params, fetch=False)
     return ecc_encrypted, space_positions
 
 # Super Decryption Function
 def super_decrypt(encrypted_message, rail_key, space_positions):
     # Step 1: Decrypt with ECC (Elliptic Curve Cryptography)
-    query = "SELECT private_key_content, public_key_content FROM messages WHERE encrypted_text = %s"
+    query = "SELECT private_key_content FROM messages WHERE encrypted_text = %s"
     result = cn.run_query(query, (encrypted_message,), True)
     if result is None or len(result) == 0:
         print("No data found.")
         return None
-    private_key_content, public_key_content = result['private_key_content'][0], result['public_key_content'][0]
+    private_key_content = result['private_key_content'][0]
     ecc_private_key = load_key_from_base64(private_key_content, is_private=True)    
-    ecc_public_key = load_key_from_base64(public_key_content, is_private=False)
-    ecc_decrypted = ecc_decrypt(encrypted_message, ecc_private_key, ecc_public_key)
+    ecc_decrypted = ecc_decrypt(encrypted_message, ecc_private_key)
     print(f"ECC Decrypted: {ecc_decrypted}")
 
     # Step 2: Decrypt with Rail Fence Cipher
@@ -207,24 +210,35 @@ def super_decrypt(encrypted_message, rail_key, space_positions):
     return rail_decrypted
 
 
+# Contoh penggunaan
+private_key, public_key = generate_ecc_keys()
+print("Private Key:", private_key)
+print("Public Key:", public_key)
 
-# print("Private Key:", private_key)
-# print("Public Key:", public_key)
-# private_key_base64, public_key_base64 = get_key_base64(private_key, public_key)
-# print("Private Key Base64:", private_key_base64)
-# print("Public Key Base64:", public_key_base64)
+# # Enkripsi
+# message = "Hello, ECC World!"
+# encrypted_message = ecc_encrypt(message, public_key)
+# print("Encrypted Message:", encrypted_message)
+
+# # Dekripsi
+# decrypted_message = ecc_decrypt(encrypted_message, private_key)
+# print("Decrypted Message:", decrypted_message)
+
+private_key_base64, public_key_base64 = get_key_base64(private_key, public_key)
+print("Private Key Base64:", private_key_base64)
+print("Public Key Base64:", public_key_base64)
 
 # Contoh penggunaan untuk memuat kunci dari Base64
-# private_key_reloaded = load_key_from_base64(private_key_base64, is_private=True)
-# public_key_reloaded = load_key_from_base64(public_key_base64, is_private=False)
+private_key_reloaded = load_key_from_base64(private_key_base64, is_private=True)
+public_key_reloaded = load_key_from_base64(public_key_base64, is_private=False)
 
-# print("Private Key Loaded:", private_key_reloaded)
-# print("Public Key Loaded:", public_key_reloaded)
+print("Private Key Loaded:", private_key_reloaded)
+print("Public Key Loaded:", public_key_reloaded)
 
-# message = "Hello, World! This is a test message. Let's see if the encryption and decryption work correctly. This is a very long message that will be encrypted and decrypted using ECC."
-# encrypyted_message = ecc_encrypt(message, public_key_reloaded, private_key_reloaded)
-# print("Encrypted Message:", encrypyted_message)
+message = "Hello, World! This is a test message. Let's see if the encryption and decryption work correctly. This is a very long message that will be encrypted and decrypted using ECC."
+encrypyted_message = ecc_encrypt(message, public_key_reloaded)
+print("Encrypted Message:", encrypyted_message)
 
-# decrypted_message = ecc_decrypt(encrypyted_message, private_key_reloaded, public_key_reloaded)
-# print("Decrypted Message:", decrypted_message)
+decrypted_message = ecc_decrypt(encrypyted_message, private_key_reloaded)
+print("Decrypted Message:", decrypted_message)
 
