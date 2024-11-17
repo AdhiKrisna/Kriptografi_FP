@@ -44,7 +44,7 @@ def dashboard(page):
                         st.stop()
         pass
     elif page == "Image Steganography":
-        col1, col2, col3 = st.columns([5, 1, 10])
+        col1, col2, col3 = st.columns([5, 1, 15])
         with col3:
             st.title("Image Steganography")
             tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
