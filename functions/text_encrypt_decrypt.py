@@ -182,7 +182,7 @@ def super_encrypt(message, rail_key):
     
     # Step 2: Encrypt with ECC (Elliptic Curve Cryptography)
     private_key, public_key = generate_ecc_keys()
-    ecc_encrypted = ecc_encrypt(rail_encrypted, public_key, private_key)
+    ecc_encrypted = ecc_encrypt(rail_encrypted, public_key)
     private_key_content, public_key_content = get_key_base64(private_key, public_key)
     
     query = "INSERT INTO messages (encrypted_text, rail_fence_key, space_position, private_key_content) VALUES (%s, %s, %s, %s)"
