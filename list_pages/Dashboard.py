@@ -8,7 +8,7 @@ import base64
 import os
 
 def dashboard(page):
-    col1, col2, col3 = st.columns([5, 1, 10])
+    col1, col2, col3 = st.columns([5, 1, 15])
     if page == "Kotak Pandora":
         with col3:
             st.title("Message Cryptography using Rail Fence and ECC (Elliptic Curve Cryptography)")
