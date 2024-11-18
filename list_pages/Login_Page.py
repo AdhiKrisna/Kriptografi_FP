@@ -16,7 +16,7 @@ def login():
             # Query data
             query = cn.run_query(query="SELECT username, password, fernetkey FROM users;")
             # st.write("Query Result:", query)
-            # Pastikan hasil query tidak kosong
+            # jika ada hasil query, lakukan pengecekan username dan password
             if query is not None and not query.empty:
                 for _, row in query.iterrows():
                     key = row['fernetkey']
@@ -39,7 +39,7 @@ def login():
                 # Jika tidak ada username yang cocok
             st.error("Login failed. Please check your credentials.")
         else:
-            st.error("No data found.")
+            st.write("Please login to continue.")
     with col2:
         None
     with col3:
