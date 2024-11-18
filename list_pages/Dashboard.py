@@ -1,6 +1,6 @@
 import streamlit as st
 from functions.text_encrypt_decrypt import super_encrypt, super_decrypt
-from functions.steganography_encryption import encode_image,  decode_image
+from functions.steganography_encryption import embed_msg,  extract_msg
 from functions.file_encrypt import encrypt_file, decrypt_file
 import connection as cn
 from Crypto.Random import get_random_bytes
@@ -64,7 +64,7 @@ def dashboard(page):
                 if message != '' and image_file:
                     # image_file_data = image_file.read()
                     if st.button("Encrypt and Save"):
-                        hidden_image_path = encode_image(image_file, output_image_path, message)
+                        hidden_image_path = embed_msg(image_file, output_image_path, message)
                         st.success(f"File has been hidden in image: {hidden_image_path}")
                         with open(hidden_image_path, "rb") as img_file:
                             st.download_button(
@@ -80,7 +80,7 @@ def dashboard(page):
                     if st.button("Decrypt"):
                         with st.expander(":green[See Result]"):
                             try:
-                                message = decode_image(encrypted_image)
+                                message = extract_msg(encrypted_image)
                                 st.success(f"Hidden message: ")
                                 st.write(f":green[{message}]")
                             except Exception as e:
