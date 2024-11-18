@@ -21,7 +21,7 @@ def dashboard(page):
                 if st.button("Encrypt"):
                     if message == "":
                         st.error("Please input a message.")
-                        st.rerun()
+                        return  
                     with st.expander(":green[See Result]"):
                         super_encrypted, space_positions = super_encrypt(message, railKey)
                         st.subheader(f"Encrypted Message: ")
