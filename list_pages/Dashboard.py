@@ -36,14 +36,14 @@ def dashboard(page):
                 if st.button("Decrypt"):
                     with st.expander(":green[See Result]"):
                         query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
-                        st.write(query)
+                        # st.write(query)
                         if query is not None and not query.empty:
                             spacePosition = query['space_position'][0]
                             decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
                             st.subheader(f"Decrypted Message: ")
                             st.write(f":green[{decrypted_message}]")
                         else:
-                            st.error("This message is not in the pandora's box.")
+                            st.error("Pesan ini tidak ada dalam kotak pandora.")
                             st.stop()
             pass
         with col2:
