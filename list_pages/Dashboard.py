@@ -21,30 +21,33 @@ def dashboard(page):
                 if st.button("Encrypt"):
                     if message == "":
                         st.error("Please input a message.")
-                        return  
-                    with st.expander(":green[See Result]"):
-                        super_encrypted, space_positions = super_encrypt(message, railKey)
-                        st.subheader(f"Encrypted Message: ")
-                        st.write(f":green[{super_encrypted}]")
-                        st.code(f"{super_encrypted}", language='text', line_numbers=True)
-                        st.subheader(f"Please copy the encrypted message for decryption.")
+                    else:
+                        with st.expander(":green[See Result]"):
+                            super_encrypted, space_positions = super_encrypt(message, railKey)
+                            st.subheader(f"Encrypted Message: ")
+                            st.write(f":green[{super_encrypted}]")
+                            st.code(f"{super_encrypted}", language='text', line_numbers=True)
+                            st.subheader(f"Please copy the encrypted message for decryption.")
             with tab2:
                 st.header("Text Decrypt")
                 encryptedText = st.text_area("Input Encrypted Message")
                 railKey = st.number_input(label='Rail and Fence Key Decrypt', min_value=2, value=2)  
                 # spacePosition = st.text_input("Input Space Positions")
                 if st.button("Decrypt"):
-                    with st.expander(":green[See Result]"):
-                        query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
-                        # st.write(query)
-                        if query is not None and not query.empty:
-                            spacePosition = query['space_position'][0]
-                            decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
-                            st.subheader(f"Decrypted Message: ")
-                            st.write(f":green[{decrypted_message}]")
-                        else:
-                            st.error("Pesan ini tidak ada dalam kotak pandora.")
-                            st.stop()
+                    if encryptedText == "":
+                        st.error("Please input an encrypted message.")
+                    else:
+                        with st.expander(":green[See Result]"):
+                            query = cn.run_query("SELECT * FROM messages WHERE encrypted_text = %s;", (encryptedText,), fetch=True)
+                            # st.write(query)
+                            if query is not None and not query.empty:
+                                spacePosition = query['space_position'][0]
+                                decrypted_message = super_decrypt(encryptedText, railKey, spacePosition)
+                                st.subheader(f"Decrypted Message: ")
+                                st.write(f":green[{decrypted_message}]")
+                            else:
+                                st.error("Pesan ini tidak ada dalam kotak pandora.")
+                                st.stop()
             pass
         with col2:
             None
