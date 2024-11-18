@@ -6,7 +6,8 @@ import app as app
 def register():
     col1, col2, col3 = st.columns([10, 1, 3])
     with col1:
-        st.header("Register Page (Fernet Encryption)")
+        st.title(":green[Welcome to Kristography]")
+        st.header(":red[Register Here...]")
 
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")

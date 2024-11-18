@@ -8,7 +8,9 @@ if "is_logged_in" not in st.session_state:
 def login():
     col1, col2, col3 = st.columns([10, 1, 3])
     with col1:
-        st.header("Login Page Fernet Decryption with Key")
+        st.title(":green[Welcome to Kristography]")
+        st.header(":red[Foreigner Detected, Please Login to Continue]")
+       
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
 
@@ -39,7 +41,7 @@ def login():
                 # Jika tidak ada username yang cocok
             st.error("Login failed. Please check your credentials.")
         else:
-            st.write("Please login to continue.")
+            st.write(':red[Kristaleo Says: "Please Login to Continue"]')
     with col2:
         None
     with col3:
