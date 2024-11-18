@@ -1,1 +1,2 @@
-https://adhikrisna-kriptografi.streamlit.app/
+deploy link: https://adhikrisna-kriptografi.streamlit.app/
+repo link: https://github.com/AdhiKrisna/Kriptografi_FP

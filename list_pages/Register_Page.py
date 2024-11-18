@@ -8,10 +8,8 @@ def register():
     with col1:
         st.title(":green[Welcome to Kristography]")
         st.header(":red[Register Here...]")
-
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
-
         if st.button("Register"):
             if username == "" or password == "":
                 st.error("Please fill in all fields.")
