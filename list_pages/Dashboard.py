@@ -16,7 +16,7 @@ def dashboard(page):
             with tab1:
                 st.header("Text Encrypt")
                 message = st.text_area("Input Plain Text Message")
-                railKey = st.number_input(label='Rail and Fence Key', min_value=2, max_value=1000, value=2)  
+                railKey = st.number_input(label='Rail and Fence Key', min_value=2, value=2)  
                 if st.button("Encrypt"):
                     if message == "":
                         st.error("Please input a message.")
@@ -30,7 +30,7 @@ def dashboard(page):
             with tab2:
                 st.header("Text Decrypt")
                 encryptedText = st.text_area("Input Encrypted Message")
-                railKey = st.number_input(label='Rail and Fence Key Decrypt', min_value=2, max_value=1000, value=2)  
+                railKey = st.number_input(label='Rail and Fence Key Decrypt', min_value=2, value=2)  
                 # spacePosition = st.text_input("Input Space Positions")
                 if st.button("Decrypt"):
                     with st.expander(":green[See Result]"):
