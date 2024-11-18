@@ -12,6 +12,7 @@ def dashboard(page):
     if page == "Kotak Pandora":
         with col3:
             st.title("Message Cryptography using Rail Fence and ECC (Elliptic Curve Cryptography)")
+            st.header("Message Cryptography using Rail Fence and ECC (Elliptic Curve Cryptography)")
             tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
             with tab1:
                 st.header("Text Encrypt")
