@@ -65,7 +65,9 @@ def dashboard(page):
                 message = st.text_area("Input Plain Text Message")
                 output_image_path = 'encrypted_image.png'
                 image_file = st.file_uploader("Upload a cover image", type=["png", "jpg", "jpeg", "webp", "tiff", "bmp", "gif"])
-                if message != '' and image_file:
+                if message == "":
+                    st.error("Please input a message.")
+                elif message != '' and image_file:
                     # image_file_data = image_file.read()
                     if st.button("Encrypt and Save"):
                         hidden_image_path = embed_msg(image_file, output_image_path, message)
@@ -77,6 +79,7 @@ def dashboard(page):
                                 file_name="encrypted_image.png",
                                 mime="image/png"
                             )
+                
             with tab2:
                 st.header("Image Decrypt")
                 encrypted_image = st.file_uploader("Upload an image to extract data", type=["png"])
