@@ -43,7 +43,7 @@ def dashboard(page):
                             st.subheader(f"Decrypted Message: ")
                             st.write(f":green[{decrypted_message}]")
                         else:
-                            st.error("No data found.")
+                            st.error("This message is not in the pandora's box.")
                             st.stop()
             pass
         with col2:
