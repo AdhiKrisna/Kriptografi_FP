@@ -11,7 +11,7 @@ def dashboard(page):
     col1, col2, col3 = st.columns([5, 1, 15])
     if page == "Kotak Pandora":
         with col3:
-            st.title("Message Cryptography using Rail Fence and ECC (Elliptic Curve Cryptography)")
+            st.title("Kotak Pandora")
             st.header("Message Cryptography using Rail Fence and ECC (Elliptic Curve Cryptography)")
             tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
             with tab1:
@@ -53,11 +53,11 @@ def dashboard(page):
     elif page == "Galeri Stegano":
         col1, col2, col3 = st.columns([15, 1, 10])
         with col1:
-            st.title("Image Steganography")
+            st.title("Galeri Stegano")
+            st.header("Image Steganography using LSB (Least Significant Bit) Algorithm")
             tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
             with tab1:
                 st.header("Image Encrypt")
-                
                 # Pilih file untuk dienkripsi
                 message = st.text_area("Input Plain Text Message")
                 output_image_path = 'encrypted_image.png'
