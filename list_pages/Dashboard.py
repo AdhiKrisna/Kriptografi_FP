@@ -9,7 +9,7 @@ import os
 
 def dashboard(page):
     col1, col2, col3 = st.columns([5, 1, 15])
-    if page == "Kotak Pandora":
+    if page == "Pandora Box":
         with col3:
             st.title(":green[Pandora's Box] ")
             st.header("Send Messages into the Pandora's Box")
@@ -53,7 +53,7 @@ def dashboard(page):
             None
         with col1:
             st.image("assets/gambar2.png", width=400)
-    elif page == "Galeri Stegano":
+    elif page == "Stegano Gallery":
         col1, col2, col3 = st.columns([15, 1, 10])
         with col1:
             st.title(":green[Stegano Gallery]")
@@ -97,10 +97,10 @@ def dashboard(page):
         with col3:
             st.image("assets/gambar3.png", width=400)
         pass
-    elif page == "Hermest Chest":
+    elif page == "Hermes Chest":
         col1, col2, col3 = st.columns([15, 1, 5])
         with col1:
-            st.title(":green[Hermest Chest]")
+            st.title(":green[Hermes Chest]")
             tab1, tab2 = st.tabs(["Encrypt", "Decrypt"])
             with tab1:
                 st.header(":red[Seal in Chest]")

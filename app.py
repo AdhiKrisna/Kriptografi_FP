@@ -8,7 +8,7 @@ if st.session_state['is_logged_in']:
     st.sidebar.title("Kristography Navigation")
     username = st.session_state['username']
     st.sidebar.success(f"Logged in as {username}")
-    page = st.sidebar.selectbox("Go to", ["Kotak Pandora", "Galeri Stegano", "Hermest Chest"], format_func=lambda x: f"📦 {x}" if x == "Kotak Pandora" else f"🖼️ {x}" if x == "Galeri Stegano" else f"📁 {x}")
+    page = st.sidebar.selectbox("Go to", ["Pandora Box", "Stegano Gallery", "Hermes Chest"], format_func=lambda x: f"📦 {x}" if x == "Kotak Pandora" else f"🖼️ {x}" if x == "Galeri Stegano" else f"📁 {x}")
     Dashboard.dashboard(page)
     if st.sidebar.button("Logout"):
         st.session_state['is_logged_in'] = False
